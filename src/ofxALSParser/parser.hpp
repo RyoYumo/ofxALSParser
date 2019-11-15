@@ -45,8 +45,8 @@ private:
     
 
 namespace helper {
-inline bool empty(const Clip& clip){
-    return clip.name == "null" ? true : false;
+inline bool empty(const ClipSlot& slot){
+    return clip.clip ? true : false;
 }
 }
     
