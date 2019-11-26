@@ -18,9 +18,9 @@
 namespace ofx {
 namespace als {
 struct Clip {
-    Clip(const std::string& name, ofColor color) : name{name}, color{color}{}
+    Clip(const std::string& name, int color) : name{name}, color{color}{}
     std::string name;
-    ofColor     color;
+    int color;
 };
     
 struct ClipSlot{
@@ -46,8 +46,11 @@ private:
 
 namespace helper {
 inline bool empty(const ClipSlot& slot){
-    return clip.clip ? true : false;
+    return slot.clip ? false : true;
 }
+
+ofColor convertColorIndexToRgb(int color_index);
+
 }
     
 } // namespace als

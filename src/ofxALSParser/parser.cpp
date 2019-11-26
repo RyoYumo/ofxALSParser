@@ -74,7 +74,9 @@ static const std::unordered_map<int, ofColor> kColorIndexMap{
     {59, ofColor(255,255,255)}
 };
     
-ofColor ConvertIndexToRgb(int color_index){
+    
+namespace helper {
+ofColor convertColorIndexToRgb(int color_index){
     auto itr = kColorIndexMap.find(color_index);
     if(itr != kColorIndexMap.end()){
         return (*itr).second;
@@ -82,7 +84,8 @@ ofColor ConvertIndexToRgb(int color_index){
         return ofColor::white;
     }
 }
-    
+}
+
     
 bool Parser::open(const std::string& file_path){
     std::ifstream ifs;
@@ -183,8 +186,8 @@ std::vector<ClipSlot>  Parser::getClipSlotsTrackUnit(const std::string& track_na
             ClipSlot ret;
             auto  clip_node = node.child("ClipSlot").child("Value").child(clip_type);
             std::string name = clip_node.child("Name").attribute("Value").as_string();
-            ofColor color = ConvertIndexToRgb(clip_node.child("ColorIndex").attribute("Value").as_int());
-            bool has_clip = !name.empty() && color != ConvertIndexToRgb(0);
+            int color = clip_node.child("ColorIndex").attribute("Value").as_int();
+            bool has_clip = !name.empty() && color != 0;
             if (has_clip) { // has clip
                 ret.clip = std::make_shared<Clip>(name, color);
             }
