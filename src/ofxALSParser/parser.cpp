@@ -11,7 +11,8 @@
 
 namespace ofx {
 namespace als {
-static const std::unordered_map<int, ofColor> kColorIndexMap{
+namespace {
+const std::unordered_map<int, ofColor> kColorIndexMap{
     {0, ofColor(237,66,15)},
     {1, ofColor(193,94,0)},
     {2, ofColor(178,139,0)},
@@ -73,9 +74,7 @@ static const std::unordered_map<int, ofColor> kColorIndexMap{
     {58, ofColor(225,231,231)},
     {59, ofColor(255,255,255)}
 };
-    
-    
-namespace helper {
+
 ofColor convertColorIndexToRgb(int color_index){
     auto itr = kColorIndexMap.find(color_index);
     if(itr != kColorIndexMap.end()){
@@ -85,7 +84,7 @@ ofColor convertColorIndexToRgb(int color_index){
     }
 }
 }
-
+    
     
 bool Parser::open(const std::string& file_path){
     std::ifstream ifs;
@@ -171,12 +170,10 @@ std::vector<std::string> Parser::getSceneNames() const {
     return ret;
 }
     
-std::vector<ClipSlot>  Parser::getClipSlotsTrackUnit(const std::string& track_name) const {
+std::vector<ClipSlot>  Parser::getClipSlots(const std::size_t track_index) const {
     std::vector<ClipSlot> ret;
     auto tracks_node = als_xml_.child("Ableton").child("LiveSet").child("Tracks").children();
-    auto node_itr = std::find_if(tracks_node.begin(), tracks_node.end(), [track_name](pugi::xml_node node){
-        return track_name == node.child("Name").child("EffectiveName").attribute("Value").as_string();
-    });
+    auto node_itr = std::next(tracks_node.begin(), track_index);
     
     if (node_itr != tracks_node.end()){
         auto clip_slots_node = node_itr->child("DeviceChain").child("MainSequencer").child("ClipSlotList").children();
@@ -186,33 +183,17 @@ std::vector<ClipSlot>  Parser::getClipSlotsTrackUnit(const std::string& track_na
             ClipSlot ret;
             auto  clip_node = node.child("ClipSlot").child("Value").child(clip_type);
             std::string name = clip_node.child("Name").attribute("Value").as_string();
+            ofLog() << name;
             int color = clip_node.child("ColorIndex").attribute("Value").as_int();
-            bool has_clip = !name.empty() && color != 0;
+            bool has_clip = !name.empty() || color != 0;
             if (has_clip) { // has clip
-                ret.clip = std::make_shared<Clip>(name, color);
+                ret.clip = std::make_shared<Clip>(name, convertColorIndexToRgb(color));
             }
             return ret;
         });
     }
     return ret;
 }
-    
-std::vector<ClipSlot> Parser::getClipSlotsSceneUnit(const std::string& scene_name) const{
-    std::vector<ClipSlot> ret;
-    auto scenes_node = als_xml_.child("Ableton").child("LiveSet").child("SceneNames");
-    auto node_itr = std::find_if(scenes_node.begin(), scenes_node.end(), [scene_name](pugi::xml_node node){
-        return scene_name == node.attribute("Value").as_string();
-    });
-    if (node_itr != scenes_node.end()){
-        auto scene_index = std::distance(scenes_node.begin(), node_itr);
-        for(auto name : getAudioAndMidiTrackNames()){
-            auto clips = getClipSlotsTrackUnit(name);
-            ret.push_back(clips[scene_index]);
-        }
-    }
-    return ret;
-}
-
 
 }
 }

@@ -18,13 +18,14 @@
 namespace ofx {
 namespace als {
 struct Clip {
-    Clip(const std::string& name, int color) : name{name}, color{color}{}
+    Clip(const std::string& name, const ofColor& color) : name{name}, color{color}{}
     std::string name;
-    int color;
+    ofColor color;
 };
     
 struct ClipSlot{
     std::shared_ptr<Clip> clip;
+    operator bool() const { return clip ? true : false; }
 };
 
 class Parser {
@@ -37,22 +38,10 @@ public:
     std::vector<std::string>  getReturnTrackNames() const;
     std::vector<std::string>  getAudioAndMidiTrackNames() const; // without return tracks
     std::vector<std::string>  getSceneNames() const;
-    std::vector<ClipSlot>     getClipSlotsTrackUnit(const std::string& track_name) const;
-    std::vector<ClipSlot>     getClipSlotsSceneUnit(const std::string& scene_name) const;
+    std::vector<ClipSlot>     getClipSlots(const std::size_t track_index) const;
 private:
     pugi::xml_document als_xml_;
 };
-    
-
-namespace helper {
-inline bool empty(const ClipSlot& slot){
-    return slot.clip ? false : true;
-}
-
-ofColor convertColorIndexToRgb(int color_index);
-
-}
-    
 } // namespace als
 } // namespace ofx
 
