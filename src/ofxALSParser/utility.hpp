@@ -5,8 +5,8 @@
 //  Created by Ryo Yumoto on 2020/02/02.
 //
 
-#ifndef utility_hpp
-#define utility_hpp
+#ifndef OFXALSPARSER_UTILITY_HPP_
+#define OFXALSPARSER_UTILITY_HPP_
 
 #include "parser.hpp"
 #include <algorithm>
@@ -50,4 +50,4 @@ inline static const std::vector<Track> PickUpAudioMidiTrack(const LiveSet& live_
 } // namespace als
 } // namespace ofx
 
-#endif /* utility_hpp */
+#endif // OFXALSPARSER_UTILITY_HPP_
