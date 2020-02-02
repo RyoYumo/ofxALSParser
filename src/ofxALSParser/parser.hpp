@@ -30,7 +30,7 @@ struct ClipSlot{
 
 class Parser {
 public:
-    bool open(const std::string& file_path);
+    bool load(const std::string& file_path);
     std::string getVersion() const ;
     std::vector<std::string>  getTrackNames() const ;
     std::vector<std::string>  getAudioTrackNames() const;
