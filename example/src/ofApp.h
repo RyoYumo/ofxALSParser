@@ -9,6 +9,6 @@ public:
     void draw();
     
 private:
-    ofxALSParser parser;
+    ofxALS::LiveSet live_set;
 
 };

@@ -55,6 +55,7 @@ private:
 
 class LiveSet {
 public:
+    LiveSet(){}
     LiveSet(const std::vector<Track>& tracks);
     const std::vector<Track>& tracks() const { return tracks_; }
 private:
