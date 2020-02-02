@@ -93,118 +93,90 @@ ofColor convertColorIndexToRgb(int color_index){
         return ofColor::white;
     }
 }
+
+bool IsEmptySlot(const std::string& name, const ofColor& color){
+    return false;
 }
+
+}
+
+ClipSlot::ClipSlot() : clip_{nullptr} {
     
+}
+
+ClipSlot::ClipSlot(const Clip& clip) : clip_(std::make_shared<Clip>(clip)){
     
-bool Parser::load(const std::string& file_path){
+}
+
+// Track
+Track::Track(const std::string& name, TrackType type, const std::vector<ClipSlot> clip_slots) : name_{name}, clip_slots_{clip_slots}, type_{type}{
+    
+}
+
+
+// LiveSet
+LiveSet::LiveSet(const std::vector<Track>& tracks) : tracks_{tracks}{
+    
+}
+
+
+// Parser
+std::string Parser::GetVersion(const std::string& file_path){
     std::ifstream ifs;
     ifs.open(ofToDataPath(file_path).c_str());
-    if(!ifs) return false;
+    assert(ifs);
+    
     Poco::InflatingInputStream inflater(ifs, Poco::InflatingStreamBuf::STREAM_GZIP);
-    if(!inflater) return false;
-    auto result = als_xml_.load(inflater);
-    if(result) {
-        std::cout << "Description: " << result.description() << std::endl;
-    }else{
-        std::cerr << "Error description: " << result.description() << std::endl;
-        return false;
-    }
-    return true;
-}
+    assert(inflater);
     
-    
-std::string Parser::getVersion() const {
-    return als_xml_.child("Ableton").attribute("Creator").value();
+    pugi::xml_document xml;
+    xml.load(inflater);
+    return xml.child("Ableton").attribute("Creator").value();
 }
 
-
-std::vector<std::string> Parser::getTrackNames() const {
-    std::vector<std::string> ret;
-    auto tracks_node = als_xml_.child("Ableton").child("LiveSet").child("Tracks").children();
-    std::transform(tracks_node.begin(), tracks_node.end(), std::back_inserter(ret), [](pugi::xml_node node){
-        return node.child("Name").child("EffectiveName").attribute("Value").as_string();
-    });
-    return ret;
-}
-
+LiveSet Parser::GetLiveSet(const std::string& file_path){
+    std::ifstream ifs;
+    ifs.open(ofToDataPath(file_path).c_str());
+    assert(ifs);
     
-std::vector<std::string> Parser::getAudioTrackNames() const {
-    std::vector<std::string> ret;
-    auto tracks_node = als_xml_.child("Ableton").child("LiveSet").child("Tracks").children("AudioTrack");
-    std::transform(tracks_node.begin(), tracks_node.end(), std::back_inserter(ret), [](pugi::xml_node node){
-        return node.child("Name").child("EffectiveName").attribute("Value").as_string();
-    });
-    return ret;
-}
-   
+    Poco::InflatingInputStream inflater(ifs, Poco::InflatingStreamBuf::STREAM_GZIP);
+    assert(inflater);
     
-std::vector<std::string> Parser::getMidiTrackNames() const {
-    std::vector<std::string> ret;
-    auto tracks_node = als_xml_.child("Ableton").child("LiveSet").child("Tracks").children("MidiTrack");
-    std::transform(tracks_node.begin(), tracks_node.end(), std::back_inserter(ret), [](pugi::xml_node node){
-        return node.child("Name").child("EffectiveName").attribute("Value").as_string();
-    });
-    return ret;
-}
+    pugi::xml_document xml;
+    xml.load(inflater);
     
+    auto tracks_node = xml.child("Ableton").child("LiveSet").child("Tracks").children();
+    const std::unordered_map<std::string, Track::TrackType> kTrackTypeMap {
+        {"AudioTrack", Track::TrackType::kAudio },
+        {"MidiTrack", Track::TrackType::kMidi},
+        {"ReturnTrack", Track::TrackType::kReturn}
+    };
     
-std::vector<std::string> Parser::getReturnTrackNames() const {
-    std::vector<std::string> ret;
-    auto tracks_node = als_xml_.child("Ableton").child("LiveSet").child("Tracks").children("ReturnTrack");
-    std::transform(tracks_node.begin(), tracks_node.end(), std::back_inserter(ret), [](pugi::xml_node node){
-        return node.child("Name").child("EffectiveName").attribute("Value").as_string();
-    });
-    return ret;
-}
-
-std::vector<std::string>  Parser::getAudioAndMidiTrackNames() const {
-    auto ret           = getTrackNames();
-    auto ret_tracks    = getReturnTrackNames();
-    auto result = std::remove_if(ret.begin(), ret.end(), [ret_tracks](std::string track){
-        bool is_return_track = std::any_of(ret_tracks.begin(), ret_tracks.end(), [track](std::string ret_track){
-            return track == ret_track;
-        });
-        return is_return_track;
-    });
-    ret.erase(result, ret.end());
-    return ret;
-}
-
+    const std::unordered_map<Track::TrackType, std::string> kClipTypeMap {
+        {Track::TrackType::kAudio, "AudioClip"},
+        {Track::TrackType::kMidi,  "MidiClip"}
+    };
     
-std::vector<std::string> Parser::getSceneNames() const {
-    std::vector<std::string> ret;
-    auto scenes_node = als_xml_.child("Ableton").child("LiveSet").child("SceneNames");
-    std::transform(scenes_node.begin(), scenes_node.end(), std::back_inserter(ret), [](pugi::xml_node node){
-        return node.attribute("Value").as_string();
-    });
-    return ret;
-}
-    
-std::vector<ClipSlot>  Parser::getClipSlots(const std::size_t track_index) const {
-    std::vector<ClipSlot> ret;
-    auto tracks_node = als_xml_.child("Ableton").child("LiveSet").child("Tracks").children();
-    auto node_itr = std::next(tracks_node.begin(), track_index);
-    
-    if (node_itr != tracks_node.end()){
-        auto clip_slots_node = node_itr->child("DeviceChain").child("MainSequencer").child("ClipSlotList").children();
-        std::string track_type = node_itr->name();
-        auto clip_type =  (track_type == "AudioTrack") ? "AudioClip" : "MidiClip";
-        std::transform(clip_slots_node.begin(), clip_slots_node.end(), std::back_inserter(ret), [clip_type](pugi::xml_node node){
-            ClipSlot ret;
-            auto  clip_node = node.child("ClipSlot").child("Value").child(clip_type);
-            std::string name = clip_node.child("Name").attribute("Value").as_string();
-            ofLog() << name;
-            int color = clip_node.child("ColorIndex").attribute("Value").as_int();
-            bool has_clip = !name.empty() || color != 0;
-            if (has_clip) { // has clip
-                ret.clip = std::make_shared<Clip>(name, convertColorIndexToRgb(color));
+    std::vector<Track> tracks;
+    for(const auto& track_node : tracks_node){
+        auto t_type = kTrackTypeMap.at(track_node.name());
+        auto t_name = track_node.child("Name").child("EffectiveName").attribute("Value").as_string();
+        std::vector<ClipSlot> slots;
+        for(const auto& clip_slot_node : track_node.child("DeviceChain").child("MainSequencer").child("ClipSlotList").children()){
+            auto clip_node  = clip_slot_node.child("ClipSlot").child("Value").child(kClipTypeMap.at(t_type).c_str());
+            auto    c_name  = clip_node.child("Name").attribute("Value").as_string();
+            ofLog() << c_name;
+            ofColor c_color = convertColorIndexToRgb(clip_node.child("ColorIndex").attribute("Value").as_int());
+            if(!IsEmptySlot(c_name, c_color)){
+                slots.push_back(ClipSlot(Clip{c_name, c_color}));
+            }else{
+                slots.push_back(ClipSlot());
             }
-            return ret;
-        });
+        }
+        tracks.push_back(Track{t_name, t_type, slots});
     }
-    return ret;
+    return LiveSet{tracks};
 }
-
 }
 }
 

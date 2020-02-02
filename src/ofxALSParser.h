@@ -4,7 +4,7 @@
 #include "ofxALSParser/parser.hpp"
 
 namespace ofxALS = ofx::als;
-using ofxALSParser = ofx::als::Parser;
+using ofxALSParser = ofxALS::Parser;
 
 
 

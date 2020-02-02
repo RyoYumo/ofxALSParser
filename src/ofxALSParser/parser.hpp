@@ -17,28 +17,54 @@
 
 namespace ofx {
 namespace als {
-struct Clip {
-    Clip(const std::string& name, const ofColor& color) : name{name}, color{color}{}
-    std::string name;
-    ofColor color;
+class Clip {
+public:
+    Clip(const std::string& name, const ofColor& color) : name_{name}, color_{color}{}
+    const std::string& name()  const { return name_; }
+    const ofColor&     color() const { return color_; }
+private:
+    std::string name_;
+    ofColor     color_;
 };
     
-struct ClipSlot{
-    std::shared_ptr<Clip> clip;
-    operator bool() const { return clip ? true : false; }
+class ClipSlot{
+public:
+    ClipSlot();
+    ClipSlot(const Clip& clip);
+    operator bool() const { return clip_ ? true : false; }
+    const std::shared_ptr<Clip> clip()  const { return clip_; }
+private:
+    std::shared_ptr<Clip> clip_;
+};
+
+class Track {
+public:
+    enum class TrackType { kAudio, kMidi, kReturn };
+    Track(const std::string& name, TrackType type, const std::vector<ClipSlot> clip_slots);
+    const std::vector<ClipSlot>& clip_slots() const { return clip_slots_;}
+    const std::string& name() const { return name_; }
+    bool  IsAudioTrack() const { return type_ == TrackType::kAudio ? true : false; }
+    bool  IsMidiTrack()  const { return type_ == TrackType::kMidi ? true : false; }
+    bool  IsReturnTrack() const { return type_ == TrackType::kReturn ? true : false; }
+private:
+    TrackType   type_;
+    std::string name_;
+    std::vector<ClipSlot> clip_slots_;
+};
+
+class LiveSet {
+public:
+    LiveSet(const std::vector<Track>& tracks);
+    const std::vector<Track>& tracks() const { return tracks_; }
+private:
+    std::vector<Track> tracks_;
 };
 
 class Parser {
 public:
-    bool load(const std::string& file_path);
-    std::string getVersion() const ;
-    std::vector<std::string>  getTrackNames() const ;
-    std::vector<std::string>  getAudioTrackNames() const;
-    std::vector<std::string>  getMidiTrackNames() const;
-    std::vector<std::string>  getReturnTrackNames() const;
-    std::vector<std::string>  getAudioAndMidiTrackNames() const; // without return tracks
-    std::vector<std::string>  getSceneNames() const;
-    std::vector<ClipSlot>     getClipSlots(const std::size_t track_index) const;
+    static LiveSet     GetLiveSet(const std::string& file_path);
+    static std::string GetVersion(const std::string& file_path);
+    
 private:
     pugi::xml_document als_xml_;
 };
