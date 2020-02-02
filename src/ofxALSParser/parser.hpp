@@ -39,15 +39,16 @@ private:
 
 class Track {
 public:
-    enum class TrackType { kAudio, kMidi, kReturn };
-    Track(const std::string& name, TrackType type, const std::vector<ClipSlot> clip_slots);
+    enum class Type { kAudio, kMidi, kReturn };
+    Track(const std::string& name, Type type, const std::vector<ClipSlot> clip_slots);
     const std::vector<ClipSlot>& clip_slots() const { return clip_slots_;}
     const std::string& name() const { return name_; }
-    bool  IsAudioTrack() const { return type_ == TrackType::kAudio ? true : false; }
-    bool  IsMidiTrack()  const { return type_ == TrackType::kMidi ? true : false; }
-    bool  IsReturnTrack() const { return type_ == TrackType::kReturn ? true : false; }
+    Type type() const { return type_; }
+    bool  IsAudioTrack() const { return type_ == Type::kAudio ? true : false; }
+    bool  IsMidiTrack()  const { return type_ == Type::kMidi ? true : false; }
+    bool  IsReturnTrack() const { return type_ == Type::kReturn ? true : false; }
 private:
-    TrackType   type_;
+    Type   type_;
     std::string name_;
     std::vector<ClipSlot> clip_slots_;
 };
@@ -65,6 +66,11 @@ public:
     static LiveSet     GetLiveSet(const std::string& file_path);
     static std::string GetVersion(const std::string& file_path);
 };
+
+
+
+
+
 } // namespace als
 } // namespace ofx
 

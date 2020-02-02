@@ -112,7 +112,7 @@ ClipSlot::ClipSlot(const Clip& clip) : clip_(std::make_shared<Clip>(clip)){
 }
 
 // Track
-Track::Track(const std::string& name, TrackType type, const std::vector<ClipSlot> clip_slots) : name_{name}, clip_slots_{clip_slots}, type_{type}{
+Track::Track(const std::string& name, Type type, const std::vector<ClipSlot> clip_slots) : name_{name}, clip_slots_{clip_slots}, type_{type}{
     
 }
 
@@ -149,20 +149,20 @@ LiveSet Parser::GetLiveSet(const std::string& file_path){
     xml.load(inflater);
     
     auto tracks_node = xml.child("Ableton").child("LiveSet").child("Tracks").children();
-    const std::unordered_map<std::string, Track::TrackType> kTrackTypeMap {
-        {"AudioTrack", Track::TrackType::kAudio },
-        {"MidiTrack", Track::TrackType::kMidi},
-        {"ReturnTrack", Track::TrackType::kReturn}
+    const std::unordered_map<std::string, Track::Type> kTypeMap {
+        {"AudioTrack", Track::Type::kAudio },
+        {"MidiTrack", Track::Type::kMidi},
+        {"ReturnTrack", Track::Type::kReturn}
     };
     
-    const std::unordered_map<Track::TrackType, std::string> kClipTypeMap {
-        {Track::TrackType::kAudio, "AudioClip"},
-        {Track::TrackType::kMidi,  "MidiClip"}
+    const std::unordered_map<Track::Type, std::string> kClipTypeMap {
+        {Track::Type::kAudio, "AudioClip"},
+        {Track::Type::kMidi,  "MidiClip"}
     };
     
     std::vector<Track> tracks;
     for(const auto& track_node : tracks_node){
-        auto t_type = kTrackTypeMap.at(track_node.name());
+        auto t_type = kTypeMap.at(track_node.name());
         auto t_name = track_node.child("Name").child("EffectiveName").attribute("Value").as_string();
         std::vector<ClipSlot> slots;
         for(const auto& clip_slot_node : track_node.child("DeviceChain").child("MainSequencer").child("ClipSlotList").children()){
