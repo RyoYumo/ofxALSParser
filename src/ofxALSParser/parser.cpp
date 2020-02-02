@@ -94,9 +94,12 @@ ofColor convertColorIndexToRgb(int color_index){
     }
 }
 
-bool IsEmptySlot(const std::string& name, const ofColor& color){
-    return false;
+bool IsEmptySlot(const pugi::xml_node clip_slot_node, const std::string& clip_type){
+    auto node  = clip_slot_node.child("ClipSlot").child("Value");
+    auto result = node.find_child([clip_type](pugi::xml_node node){ return strcmp(node.name(), clip_type.c_str()) == 0 ; });
+    return result.empty() ? true : false;
 }
+
 
 }
 
@@ -163,11 +166,10 @@ LiveSet Parser::GetLiveSet(const std::string& file_path){
         auto t_name = track_node.child("Name").child("EffectiveName").attribute("Value").as_string();
         std::vector<ClipSlot> slots;
         for(const auto& clip_slot_node : track_node.child("DeviceChain").child("MainSequencer").child("ClipSlotList").children()){
-            auto clip_node  = clip_slot_node.child("ClipSlot").child("Value").child(kClipTypeMap.at(t_type).c_str());
-            auto    c_name  = clip_node.child("Name").attribute("Value").as_string();
-            ofLog() << c_name;
-            ofColor c_color = convertColorIndexToRgb(clip_node.child("ColorIndex").attribute("Value").as_int());
-            if(!IsEmptySlot(c_name, c_color)){
+            if(!IsEmptySlot(clip_slot_node, kClipTypeMap.at(t_type))){
+                auto clip_node  = clip_slot_node.child("ClipSlot").child("Value").child(kClipTypeMap.at(t_type).c_str());
+                auto    c_name  = clip_node.child("Name").attribute("Value").as_string();
+                ofColor c_color = convertColorIndexToRgb(clip_node.child("ColorIndex").attribute("Value").as_int());
                 slots.push_back(ClipSlot(Clip{c_name, c_color}));
             }else{
                 slots.push_back(ClipSlot());
