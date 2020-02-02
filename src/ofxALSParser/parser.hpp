@@ -64,9 +64,6 @@ class Parser {
 public:
     static LiveSet     GetLiveSet(const std::string& file_path);
     static std::string GetVersion(const std::string& file_path);
-    
-private:
-    pugi::xml_document als_xml_;
 };
 } // namespace als
 } // namespace ofx
