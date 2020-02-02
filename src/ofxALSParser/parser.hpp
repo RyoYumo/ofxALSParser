@@ -5,8 +5,8 @@
 //  Created by Ryo Yumoto on 2019/11/05.
 //
 
-#ifndef parser_hpp
-#define parser_hpp
+#ifndef OFXALSPARSER_PARSER_HPP_
+#define OFXALSPARSER_PARSER_HPP_
 
 #include "pugixml.hpp"
 #include <vector>
@@ -66,18 +66,6 @@ public:
     static LiveSet     GetLiveSet(const std::string& file_path);
     static std::string GetVersion(const std::string& file_path);
 };
-
-
-
-
-
 } // namespace als
 } // namespace ofx
-
-
-
-
-
-
-
-#endif /* parser_hpp */
+#endif // OFXALSPARSER_PARSER_HPP_
