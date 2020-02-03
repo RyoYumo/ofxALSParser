@@ -44,9 +44,9 @@ public:
     const std::vector<ClipSlot>& clip_slots() const { return clip_slots_;}
     const std::string& name() const { return name_; }
     Type type() const { return type_; }
-    bool  IsAudioTrack() const { return type_ == Type::kAudio ? true : false; }
-    bool  IsMidiTrack()  const { return type_ == Type::kMidi ? true : false; }
-    bool  IsReturnTrack() const { return type_ == Type::kReturn ? true : false; }
+    bool  isAudioTrack() const { return type_ == Type::kAudio ? true : false; }
+    bool  isMidiTrack()  const { return type_ == Type::kMidi ? true : false; }
+    bool  isReturnTrack() const { return type_ == Type::kReturn ? true : false; }
 private:
     Type   type_;
     std::string name_;
@@ -64,8 +64,8 @@ private:
 
 class Parser {
 public:
-    static LiveSet     GetLiveSet(const std::string& file_path);
-    static std::string GetVersion(const std::string& file_path);
+    static LiveSet     getLiveSet(const std::string& file_path);
+    static std::string getVersion(const std::string& file_path);
 };
 } // namespace als
 } // namespace ofx

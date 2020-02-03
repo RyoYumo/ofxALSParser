@@ -124,7 +124,7 @@ LiveSet::LiveSet(const std::vector<Track>& tracks) : tracks_{tracks}{
 
 
 // Parser
-std::string Parser::GetVersion(const std::string& file_path){
+std::string Parser::getVersion(const std::string& file_path){
     std::ifstream ifs;
     ifs.open(ofToDataPath(file_path).c_str());
     assert(ifs);
@@ -137,7 +137,7 @@ std::string Parser::GetVersion(const std::string& file_path){
     return xml.child("Ableton").attribute("Creator").value();
 }
 
-LiveSet Parser::GetLiveSet(const std::string& file_path){
+LiveSet Parser::getLiveSet(const std::string& file_path){
     std::ifstream ifs;
     ifs.open(ofToDataPath(file_path).c_str());
     assert(ifs);
