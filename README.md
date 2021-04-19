@@ -1,7 +1,7 @@
 # ofxALSParser
 
 ## Usage
-```
+```cpp
 ofxALS::LiveSet live_set;
 void ofApp::setup(){
   auto result = ofSystemLoadDialog();
@@ -34,8 +34,4 @@ void ofApp::setup(){
     }
   }
 }
-
-
-
-
 ```
